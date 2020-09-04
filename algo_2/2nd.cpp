@@ -1,43 +1,70 @@
 #include <bits/stdc++.h>
+#define int long long
+
 using namespace std;
-int main() {
-    long n;
+int32_t main()
+{
+    int n;
     cin>>n;
-    vector<tuple<long,long,long>>query;
-    set<int>s;
-    long q;
+    map<int,int> mp;
+    vector<int>q1, q2, val;
+    set<int> temp;
+    int a,b,c;
+    int q;
     cin>>q;
-    while(q--) {
-        long a, b, val;
-        cin >> a >> b >> val;
-        query.push_back({a, b, val});
-        s.insert(b);
+    for(int i=0;i<q;i++){
+        cin>>a>>b>>c;
+        q1.push_back(a);
+        q2.push_back(b);
+        val.push_back(c);
+        temp.insert(a);
+        temp.insert(b);
     }
-    s.insert(n);
-    vector<int>points;
-    for(auto x:s){
-        points.push_back(x);
+    temp.insert(n);
+
+    int ind = 1;
+    for(int el: temp){
+        mp[el] = ind;
+        ind++;
     }
-    sort(points.begin(),points.end());
-    int N=points.size();
-    vector<int>value_added(N,0);
-    for(auto c:query)
-    {
-        int l=get<0>(c);
-        int r=get<1>(c);
-        int val=get<2>(c);
-        int lidx=lower_bound(points.begin(),points.end(),l)-points.begin();
-        int ridx=upper_bound(points.begin(),points.end(),r)-points.begin();
-        value_added[lidx]+=val;
-        if(ridx<N)
-            value_added[ridx]-=val;
+    int sz = temp.size() + 5;
+    int *bit = new int[sz]{0};
+    int sum = 0;
+    int i = 1;
+    for(int num : temp){
+        int k = i;
+        int upd = (num - sum);
+        while(k < sz){
+            bit[k] += upd;
+            k += (k&(-k));
+        }
+        sum = num;
+        i++;
     }
-    for(int i=1;i<N;i++){
-        value_added[i]+=value_added[i-1];
+    for(int i=0;i<q1.size();i++){
+        int k = mp[q1[i]];
+        while( k < sz){
+            bit[k] += val[i];
+            k += (k&(-k));
+        }
+        k = mp[q2[i]] + 1 ;
+        while( k < sz){
+            bit[k] -= val[i];
+            k += (k&(-k));
+        }
     }
-    for(int i=0;i<N;i++){
-        points[i]+=value_added[i];
+    int max = n;
+    for(int i=0;i<sz;i++){
+        int tem = 0;
+        int k = i;
+        while(k > 0){
+            tem += bit[k];
+            k -= (k&(-k));
+        }
+        if(max < tem) {
+            max = tem;
+        }
     }
-    cout<<* max_element(points.begin(),points.end())<<endl;
+    cout<<max<<endl;
     return 0;
 }
